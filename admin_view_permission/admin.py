@@ -101,18 +101,20 @@ class AdminViewPermissionBaseModelAdmin(admin.options.BaseModelAdmin):
 
         return change_permission
 
-    def get_excluded_fields(self):
+    def get_exclude(self, request, obj=None):
         """
         Check if we have no excluded fields defined as we never want to
         show those (to any user)
         """
-        if self.exclude is None:
-            exclude = []
-        else:
-            exclude = list(self.exclude)
+        try:
+            excluded = super(AdminViewPermissionBaseModelAdmin,
+                             self).get_exclude(request, obj)
+        except AttributeError:
+            excluded = self.exclude
+        exclude = [] if excluded is None else list(excluded)
 
         # logic taken from: django.contrib.admin.options.ModelAdmin#get_form
-        if self.exclude is None and hasattr(
+        if excluded is None and hasattr(
                 self.form, '_meta') and self.form._meta.exclude:
             # Take the custom ModelForm's Meta.exclude into account only
             # if the ModelAdmin doesn't define its own.
@@ -131,7 +133,7 @@ class AdminViewPermissionBaseModelAdmin(admin.options.BaseModelAdmin):
             fields = super(
                 AdminViewPermissionBaseModelAdmin,
                 self).get_fields(request, obj)
-            excluded_fields = self.get_excluded_fields()
+            excluded_fields = self.get_exclude(request, obj)
             readonly_fields = self.get_readonly_fields(request, obj)
             new_fields = [i for i in flatten(fields) if
                           i in readonly_fields and
@@ -172,7 +174,7 @@ class AdminViewPermissionBaseModelAdmin(admin.options.BaseModelAdmin):
                 # Try to remove id if user has not specified fields and
                 # readonly fields
                 try:
-                    readonly_fields.remove('id')
+                    readonly_fields.remove(self.opts.pk.name)
                 except ValueError:
                     pass
 
@@ -185,7 +187,7 @@ class AdminViewPermissionBaseModelAdmin(admin.options.BaseModelAdmin):
 
             # Remove from the readonly_fields list the excluded fields
             # specified on the form or the modeladmin
-            excluded_fields = self.get_excluded_fields()
+            excluded_fields = self.get_exclude(request, obj)
             if excluded_fields:
                 readonly_fields = [
                     f for f in readonly_fields if f not in excluded_fields

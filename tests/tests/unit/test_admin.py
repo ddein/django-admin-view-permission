@@ -766,7 +766,7 @@ class TestAdminViewPermissionBaseModelAdmin(DataMixin, TestCase):
         request.user = self.user_with_v_perm_on_model5
         readonly_fields = modeladmin.get_readonly_fields(request)
 
-        assert readonly_fields == ('var0', 'var1', 'var2', 'var3', 'var4')
+        assert readonly_fields == ('var1', 'var2', 'var3', 'var4')
 
     def test_get_readonly_fields__change_with_custom_id(self):
         modeladmin = ModelAdmin1(TestModel5, self.admin_site)
@@ -781,7 +781,7 @@ class TestAdminViewPermissionBaseModelAdmin(DataMixin, TestCase):
         request.user = self.user_with_v_perm_on_model5
         readonly_fields = modeladmin.get_readonly_fields(request, obj)
 
-        assert readonly_fields == ('var0', 'var1', 'var2', 'var3', 'var4')
+        assert readonly_fields == ('var1', 'var2', 'var3', 'var4')
 
     @parameterized.expand(general_params)
     def test_get_fields(self, name, request_user, obj_func, obj_params,
